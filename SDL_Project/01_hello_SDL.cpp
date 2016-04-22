@@ -172,61 +172,13 @@ bool loadMedia() {
 	//Loading success flag
 	bool success = true;
 
-	////Load PNG texture
-	//gTexture = loadTexture("texture.png");
-	//if (gTexture == NULL)
-	//{
-	//	printf("Failed to load texture image!\n");
-	//	success = false;
-	//}
-	//
-	//Load default surface
-	//gKeyPressSurfaces[KEY_PRESS_SURFACE_DEFAULT] = loadSurface("press.bmp");
-	//if (gKeyPressSurfaces[KEY_PRESS_SURFACE_DEFAULT] == NULL)
-	//{
-	//	printf("Failed to load default image!\n");
-	//	success = false;
-	//}
-	//
-	////Load space surface
-	//gKeyPressSurfaces[KEY_PRESS_SURFACE_SPACE] = loadSurface("space.png");
-	//if (gKeyPressSurfaces[KEY_PRESS_SURFACE_SPACE] == NULL)
-	//{
-	//	printf("Failed to load space image!\n");
-	//	success = false;
-	//}
-	//
-	////Load up surface
-	//gKeyPressSurfaces[KEY_PRESS_SURFACE_UP] = loadSurface("up.bmp");
-	//if (gKeyPressSurfaces[KEY_PRESS_SURFACE_UP] == NULL)
-	//{
-	//	printf("Failed to load up image!\n");
-	//	success = false;
-	//}
-	//
-	////Load down surface
-	//gKeyPressSurfaces[KEY_PRESS_SURFACE_DOWN] = loadSurface("down.bmp");
-	//if (gKeyPressSurfaces[KEY_PRESS_SURFACE_DOWN] == NULL)
-	//{
-	//	printf("Failed to load down image!\n");
-	//	success = false;
-	//}
-	//
-	////Load left surface
-	//gKeyPressSurfaces[KEY_PRESS_SURFACE_LEFT] = loadSurface("left.bmp");
-	//if (gKeyPressSurfaces[KEY_PRESS_SURFACE_LEFT] == NULL)
-	//{
-	//	printf("Failed to load left image!\n");
-	//	success = false;
-	//}
-	//
-	////Load right surface
-	//gKeyPressSurfaces[KEY_PRESS_SURFACE_RIGHT] = loadSurface("right.bmp");
-	//if (gKeyPressSurfaces[KEY_PRESS_SURFACE_RIGHT] == NULL)
-	//{
-	//	printf("Failed to load right image!\n");
-	//	success = false;
-	//}
+	//Load texture
+	gTexture = loadTexture("texture.png");
+	if (gTexture == NULL)
+	{
+		printf("Failed to load texture image!\n");
+		success = false;
+	}
 
 	return success;
 }
@@ -293,71 +245,44 @@ int main(int argc, char* args[])
 					{
 						quit = true;
 					}
-					SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-					SDL_RenderClear(gRenderer);
-					SDL_Rect fillRect = { SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
-					SDL_SetRenderDrawColor(gRenderer, 0xFF, 0x00, 0x00, 0xFF);
-					SDL_RenderFillRect(gRenderer, &fillRect);
-					SDL_Rect outlineRect = { X, Y, 100, 100 };
-					SDL_SetRenderDrawColor(gRenderer, 0x00, 0xFF, 0x00, 0xFF);
-					SDL_RenderDrawRect(gRenderer, &outlineRect);
-					//User presses a key
-					if (e.type == SDL_KEYDOWN)
-					{
-						//Select surfaces based on key press
-						switch (e.key.keysym.sym)
-						{
-						case SDLK_SPACE:
-							//gCurrentSurface = gKeyPressSurfaces[KEY_PRESS_SURFACE_SPACE];
-							break;
-					
-						case SDLK_UP:
-							//gCurrentSurface = gKeyPressSurfaces[KEY_PRESS_SURFACE_UP];
-							Y -= 10;
-							break;
-					
-						case SDLK_DOWN:
-							//gCurrentSurface = gKeyPressSurfaces[KEY_PRESS_SURFACE_DOWN];
-							Y += 10;
-							break;
-					
-						case SDLK_LEFT:
-							X -= 10;
-							//gCurrentSurface = gKeyPressSurfaces[KEY_PRESS_SURFACE_LEFT];
-							break;
-					
-						case SDLK_RIGHT:
-							X += 10;
-							//gCurrentSurface = gKeyPressSurfaces[KEY_PRESS_SURFACE_RIGHT];
-							break;
-					
-						default:
-						//	gCurrentSurface = gKeyPressSurfaces[KEY_PRESS_SURFACE_DEFAULT];
-							break;
-						}
-					}
+					//Top left corner viewport
+					SDL_Rect topLeftViewport;
+					topLeftViewport.x = 0;
+					topLeftViewport.y = 0;
+					topLeftViewport.w = SCREEN_WIDTH / 2;
+					topLeftViewport.h = SCREEN_HEIGHT / 2;
+					SDL_RenderSetViewport(gRenderer, &topLeftViewport);
+
+					//Render texture to screen
+					SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
+
+
+					//Top right viewport
+					SDL_Rect topRightViewport;
+					topRightViewport.x = SCREEN_WIDTH / 2;
+					topRightViewport.y = 0;
+					topRightViewport.w = SCREEN_WIDTH / 2;
+					topRightViewport.h = SCREEN_HEIGHT / 2;
+					SDL_RenderSetViewport(gRenderer, &topRightViewport);
+
+					//Render texture to screen
+					SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
+
+
+					//Bottom viewport
+					SDL_Rect bottomViewport;
+					bottomViewport.x = 0;
+					bottomViewport.y = SCREEN_HEIGHT / 2;
+					bottomViewport.w = SCREEN_WIDTH;
+					bottomViewport.h = SCREEN_HEIGHT / 2;
+					SDL_RenderSetViewport(gRenderer, &bottomViewport);
+
+
+					//Render texture to screen
+					SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
+
+					SDL_RenderPresent(gRenderer);
 				}
-
-				////Apply the image stretched
-				//SDL_Rect stretchRect;
-				//stretchRect.x = 0;
-				//stretchRect.y = 0;
-				//stretchRect.w = SCREEN_WIDTH;
-				//stretchRect.h = SCREEN_HEIGHT;
-				//SDL_BlitScaled(gCurrentSurface, NULL, gScreenSurface, &stretchRect);
-				////SDL_BlitSurface(gCurrentSurface, NULL, gScreenSurface, NULL);
-				//
-				////Update the surface
-				//SDL_UpdateWindowSurface(gWindow);
-
-				//Clear screen
-				//SDL_RenderClear(gRenderer);
-
-				//Render texture to screen
-				//SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
-
-				//Update screen
-				SDL_RenderPresent(gRenderer);
 			}
 		}
 	}
