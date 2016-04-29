@@ -11,6 +11,8 @@ int X = 0, Y = 0;
 bool quit = false;
 bool GameRunning = true;
 
+extern int GAME_STATE = 0;
+
 enum KeyPressSurfaces
 {
 	KEY_PRESS_SURFACE_DEFAULT,
