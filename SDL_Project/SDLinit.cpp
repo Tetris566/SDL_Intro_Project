@@ -18,8 +18,6 @@ SDL_Renderer* gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERAT
 //SDL_Texture* gKeyPressSurfaces[KEY_PRESS_SURFACE_TOTAL];
 TTF_Font *gFont = NULL;
 
-
-
 SDL_Surface* loadSurface(std::string path)
 {
 	SDL_Surface* optimizedSurface = NULL;
@@ -187,7 +185,7 @@ bool loadMedia() {
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	//Load background texture
-	if (!gBackgroundTexture.loadFromFile("background.png"))
+	if (!gBackgroundTexture.loadFromFile("Assets/Images/Backdrop.png"))
 	{
 		printf("Failed to load background texture image!\n");
 		success = false;
@@ -264,29 +262,26 @@ void SDLinit::Update() {
 			{
 				quit = true;
 			}
+			
 			else if (e.type == SDL_KEYDOWN)
 			{
 				//Select surfaces based on key press
 				switch (e.key.keysym.sym)
 				{
-				case SDLK_UP:
+				case SDLK_w:
 					gCurrentSurface = gKeyPressSurfaces[KEY_PRESS_SURFACE_UP];
-					player.Move(0,-10);
 					break;
 
-				case SDLK_DOWN:
+				case SDLK_s:
 					gCurrentSurface = gKeyPressSurfaces[KEY_PRESS_SURFACE_DOWN];
-					player.Move(0,10);
 					break;
 
-				case SDLK_LEFT:
+				case SDLK_a:
 					gCurrentSurface = gKeyPressSurfaces[KEY_PRESS_SURFACE_LEFT];
-					player.Move(-10,0);
 					break;
 
-				case SDLK_RIGHT:
+				case SDLK_d:
 					gCurrentSurface = gKeyPressSurfaces[KEY_PRESS_SURFACE_RIGHT];
-					player.Move(10, 0);
 					break;
 
 				default:
@@ -300,7 +295,7 @@ void SDLinit::Update() {
 					gCurrentSurface = gKeyPressSurfaces[KEY_PRESS_SURFACE_DEFAULT];
 					break;
 				}
-			}
+			} player.handleEvent(e);
 		}
 		////////////////////////////////////////////////////////////////////////
 		//Calculate and correct fps
@@ -320,12 +315,15 @@ void SDLinit::Update() {
 			printf("Unable to render FPS texture!\n");
 		}
 		////////////////////////////////////////////////////////////////////////
+
+		player.AdvMove();
+
 		//Clear screen
 		SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 		SDL_RenderClear(gRenderer);
 
 		//Render background texture to screen
-		gBackgroundTexture.render(0, 0);
+		gBackgroundTexture.render(player.BackOffset_X, player.BackOffset_Y);
 
 		//Render Character to the screen
 		gCurrentSurface.render(player.xPos,player.yPos);
