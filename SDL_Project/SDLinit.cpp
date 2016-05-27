@@ -13,9 +13,12 @@ enum KeyPressSurfaces
 
 SDL_Window* gWindow = NULL;
 SDL_Surface* gScreenSurface = NULL;
-SDL_Renderer* gRenderer = NULL;
-SDL_Surface* gCurrentSurface = NULL;
-SDL_Surface* gKeyPressSurfaces[KEY_PRESS_SURFACE_TOTAL];
+SDL_Renderer* gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED);
+//SDL_Texture* gCurrentSurface = NULL;
+//SDL_Texture* gKeyPressSurfaces[KEY_PRESS_SURFACE_TOTAL];
+TTF_Font *gFont = NULL;
+
+
 
 SDL_Surface* loadSurface(std::string path)
 {
@@ -69,122 +72,14 @@ SDL_Texture* loadTexture(std::string path)
 	return newTexture;
 }
 
-//Texture wrapper class
-class LTexture
-{
-public:
-	//Initializes variables
-	LTexture();
-
-	//Deallocates memory
-	~LTexture();
-
-	//Loads image at specified path
-	bool loadFromFile(std::string path);
-
-	//Deallocates texture
-	void free();
-
-	//Renders texture at given point
-	void render(int x, int y);
-
-	//Gets image dimensions
-	int getWidth();
-	int getHeight();
-
-private:
-	//The actual hardware texture
-	SDL_Texture* mTexture;
-
-	//Image dimensions
-	int mWidth;
-	int mHeight;
-};
-
-LTexture::LTexture()
-{
-	//Initialize
-	mTexture = NULL;
-	mWidth = 0;
-	mHeight = 0;
-}
-
-LTexture::~LTexture()
-{
-	//Deallocate
-	free();
-}
-
-void LTexture::free()
-{
-	//Free texture if it exists
-	if (mTexture != NULL)
-	{
-		SDL_DestroyTexture(mTexture);
-		mTexture = NULL;
-		mWidth = 0;
-		mHeight = 0;
-	}
-}
-
-void LTexture::render(int x, int y)
-{
-	//Set rendering space and render to screen
-	SDL_Rect renderQuad = { x, y, mWidth, mHeight };
-	SDL_RenderCopy(gRenderer, mTexture, NULL, &renderQuad);
-}
-
-int LTexture::getWidth()
-{
-	return mWidth;
-}
-
-int LTexture::getHeight()
-{
-	return mHeight;
-}
-
-bool LTexture::loadFromFile(std::string path)
-{
-	//Get rid of preexisting texture
-	free();
-	//The final texture
-	SDL_Texture* newTexture = NULL;
-
-	//Load image at specified path
-	SDL_Surface* loadedSurface = IMG_Load(path.c_str());
-	if (loadedSurface == NULL)
-	{
-		printf("Unable to load image %s! SDL_image Error: %s\n", path.c_str(), IMG_GetError());
-	}
-	else
-	{
-		//Color key image
-		SDL_SetColorKey(loadedSurface, SDL_TRUE, SDL_MapRGB(loadedSurface->format, 0, 0xFF, 0xFF));
-		//Create texture from surface pixels
-		newTexture = SDL_CreateTextureFromSurface(gRenderer, loadedSurface);
-		if (newTexture == NULL)
-		{
-			printf("Unable to create texture from %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
-		}
-		else
-		{
-			//Get image dimensions
-			mWidth = loadedSurface->w;
-			mHeight = loadedSurface->h;
-		}
-
-		//Get rid of old loaded surface
-		SDL_FreeSurface(loadedSurface);
-	}
-	//Return success
-	mTexture = newTexture;
-	return mTexture != NULL;
-}
-
 //Scene textures
 LTexture gFooTexture;
 LTexture gBackgroundTexture;
+LTexture gTextTexture;
+LTexture gCurrentSurface;
+LTexture gKeyPressSurfaces[KEY_PRESS_SURFACE_TOTAL];
+
+Player player("thePlayer", 240, 190, 10, 100, 0, gCurrentSurface);
 
 bool init()
 {
@@ -227,6 +122,15 @@ bool init()
 					printf("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
 					success = false;
 				}
+				//Initialize SDL_ttf
+				if (TTF_Init() == -1)
+				{
+					printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
+					success = false;
+				}
+
+				//Player Setup
+				//player.Move(10,10);
 			}
 		}
 	}
@@ -234,16 +138,53 @@ bool init()
 	return success;
 }
 
+
+
 bool loadMedia() {
 	//Loading success flag
 	bool success = true;
 
+	//Open the font
+	gFont = TTF_OpenFont("lazy.ttf", 28);
+	if (gFont == NULL)
+	{
+		printf("Failed to load lazy font! SDL_ttf Error: %s\n", TTF_GetError());
+		success = false;
+	}
+	else
+	{
+		//Render text
+		SDL_Color textColor = { 0, 0, 0 };
+		if (!gTextTexture.loadFromRenderedText("The quick brown fox jumps over the lazy dog", textColor))
+		{
+			printf("Failed to render text texture!\n");
+			success = false;
+		}
+	}
+
 	//Load Foo' texture
-	if (!gFooTexture.loadFromFile("foo.png"))
+	if (!gFooTexture.loadFromFile("Assets/Images/Player.png"))
 	{
 		printf("Failed to load Foo' texture image!\n");
 		success = false;
 	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	success = gKeyPressSurfaces[KEY_PRESS_SURFACE_DEFAULT].loadFromFile("Assets/Images/Player.png");
+
+	//Load up surface
+	success = gKeyPressSurfaces[KEY_PRESS_SURFACE_UP].loadFromFile("Assets/Images/PlayerUp.png");
+
+	//Load down surface
+	success = gKeyPressSurfaces[KEY_PRESS_SURFACE_DOWN].loadFromFile("Assets/Images/PlayerDown.png");
+
+	//Load left surface
+	success = gKeyPressSurfaces[KEY_PRESS_SURFACE_LEFT].loadFromFile("Assets/Images/PlayerLeft.png");
+
+	//Load right surface
+	success = gKeyPressSurfaces[KEY_PRESS_SURFACE_RIGHT].loadFromFile("Assets/Images/PlayerRight.png");
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	//Load background texture
 	if (!gBackgroundTexture.loadFromFile("background.png"))
@@ -290,12 +231,31 @@ void SDLinit::Update() {
 	//Event handler
 	SDL_Event e;
 
+	//Set text color as black
+	SDL_Color textColor = { 0, 0, 0, 255 };
+
+	//The frames per second timer
+	LTimer fpsTimer;
+
+	//The frames per second cap timer
+	LTimer capTimer;
+
+	//In memory text stream
+	std::stringstream timeText;
+
+	//Start counting frames per second
+	int countedFrames = 0;
+	fpsTimer.start();
+
 	//Set default current surface
 	gCurrentSurface = gKeyPressSurfaces[KEY_PRESS_SURFACE_DEFAULT];
+
 
 	//While application is running
 	while (!quit)
 	{
+		//Start cap timer
+		capTimer.start();
 		//Handle events on queue
 		while (SDL_PollEvent(&e) != 0)
 		{
@@ -304,25 +264,92 @@ void SDLinit::Update() {
 			{
 				quit = true;
 			}
-			//Clear screen
-			SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-			SDL_RenderClear(gRenderer);
+			else if (e.type == SDL_KEYDOWN)
+			{
+				//Select surfaces based on key press
+				switch (e.key.keysym.sym)
+				{
+				case SDLK_UP:
+					gCurrentSurface = gKeyPressSurfaces[KEY_PRESS_SURFACE_UP];
+					player.Move(0,-10);
+					break;
 
-			//Render background texture to screen
-			gBackgroundTexture.render(0, 0);
+				case SDLK_DOWN:
+					gCurrentSurface = gKeyPressSurfaces[KEY_PRESS_SURFACE_DOWN];
+					player.Move(0,10);
+					break;
 
-			//Render Foo' to the screen
-			gFooTexture.render(240, 190);
+				case SDLK_LEFT:
+					gCurrentSurface = gKeyPressSurfaces[KEY_PRESS_SURFACE_LEFT];
+					player.Move(-10,0);
+					break;
 
-			//Update screen
-			SDL_RenderPresent(gRenderer);
+				case SDLK_RIGHT:
+					gCurrentSurface = gKeyPressSurfaces[KEY_PRESS_SURFACE_RIGHT];
+					player.Move(10, 0);
+					break;
+
+				default:
+					gCurrentSurface = gKeyPressSurfaces[KEY_PRESS_SURFACE_DEFAULT];
+					break;
+				}
+			}
+			else if (e.type == SDL_KEYUP) {
+				switch (e.key.keysym.sym) {
+				default:
+					gCurrentSurface = gKeyPressSurfaces[KEY_PRESS_SURFACE_DEFAULT];
+					break;
+				}
+			}
+		}
+		////////////////////////////////////////////////////////////////////////
+		//Calculate and correct fps
+		float avgFPS = countedFrames / (fpsTimer.getTicks() / 1000.f);
+		if (avgFPS > 2000000)
+		{
+			avgFPS = 0;
+		}
+
+		//Set text to be rendered
+		timeText.str("");
+		timeText << "Average Frames Per Second (With Cap) " << avgFPS;
+
+		//Render text
+		if (!gTextTexture.loadFromRenderedText(timeText.str().c_str(), textColor))
+		{
+			printf("Unable to render FPS texture!\n");
+		}
+		////////////////////////////////////////////////////////////////////////
+		//Clear screen
+		SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+		SDL_RenderClear(gRenderer);
+
+		//Render background texture to screen
+		gBackgroundTexture.render(0, 0);
+
+		//Render Character to the screen
+		gCurrentSurface.render(player.xPos,player.yPos);
+
+		gTextTexture.render((SCREEN_WIDTH - gTextTexture.getWidth()) / 2, (SCREEN_HEIGHT - gTextTexture.getHeight()) / 10);
+
+		//Update screen
+		SDL_RenderPresent(gRenderer);
+		++countedFrames;
+		//If frame finished early
+		int frameTicks = capTimer.getTicks();
+		if (frameTicks < SCREEN_TICKS_PER_FRAME)
+		{
+			//Wait remaining time
+			SDL_Delay(SCREEN_TICKS_PER_FRAME - frameTicks);
 		}
 	}
 }
 
 bool SDLinit::Cleanup() {
-	SDL_Delay(2000);
+	//SDL_Delay(2000);
 	//Free loaded images
+	gCurrentSurface.free();
+	gKeyPressSurfaces[KEY_PRESS_SURFACE_TOTAL].free();
 	gFooTexture.free();
 	gBackgroundTexture.free();
 

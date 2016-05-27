@@ -4,6 +4,10 @@ and may not be redistributed without written permission.*/
 //Using SDL and standard IO
 #include "SDLinit.h"
 #include "GameManager.h"
+#include "Timer.h"
+#include <SDL.h>
+#include <stdio.h>
+#include <string>
 
 int X = 0, Y = 0;
 
@@ -59,10 +63,11 @@ SDL_Texture* loadTexture(std::string path);
 //The window renderer
  extern SDL_Renderer* gRenderer;
 
+ //Globally used font
+ extern TTF_Font *gFont;
+
 //Current displayed texture
 SDL_Texture* gTexture = NULL;
-
-
 
 void Render(float deltaTime) {
 
@@ -75,7 +80,7 @@ void Update(float deltaTime){
 
 int main(int argc, char* args[])
 {
-	SDLinit sdlInit;
+	//SDLinit sdlInit;
 	GameManager gameManager;
 	if (gameManager.Init()) {
 		gameManager.Update();
