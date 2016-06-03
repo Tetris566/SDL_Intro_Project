@@ -1,7 +1,7 @@
 #include "Player.h"
 
 Player::Player(std::string Name, int XPos, int YPos, int BaseDamage, int Health, int Score, LTexture Texture) : Actor(Name, XPos, YPos, Texture),
-	score(Score), VelX(0),VelY(0), BackOffset_X(0), BackOffset_Y(0) {} //Initialization List
+	score(Score), VelX(0),VelY(0) {} //Initialization List
 
 void Player::ModifyScore(int Amount) {
 	score += Amount;
@@ -33,6 +33,8 @@ void Player::handleEvent(SDL_Event& e) {
 		}
 	}
 }
+
+
 
 void Player::AdvMove() {
 	//Move the dot left or right
@@ -100,5 +102,30 @@ void Player::AdvMove() {
 	if (BackOffset_X < -1360) {
 		BackOffset_X = -1360;
 	}
-	//////////////////////////////////////////////////////////////////////
+}
+
+void Player::CheckCollision(Actor other) {
+	//If the dot collided or went too far to the left or right
+	xPos += VelX;
+	Collider.x = xPos;
+
+	if ((xPos < 0) || (xPos + 100 > SCREEN_WIDTH) || Collide(Collider, other.Collider))
+	{
+		
+		//Move back
+		xPos -= 2 * VelX;
+		Collider.x = xPos;
+	}
+
+	//Move the dot up or down
+	yPos += VelY;
+	Collider.y = yPos;
+
+	//If the dot collided or went too far up or down
+	if ((yPos < 0) || (yPos + 100 > SCREEN_HEIGHT) || Collide(Collider, other.Collider))
+	{
+		//Move back
+		yPos -= 2 * VelY;
+		Collider.y = yPos;
+	}
 }

@@ -1,6 +1,7 @@
 #pragma once
-#include "Actor.h"
 #include "SDLinit.h"
+#include "Actor.h"
+
 
 class Player : public Actor {
 public:
@@ -8,6 +9,7 @@ public:
 	void ModifyScore(int Amount);
 	void handleEvent(SDL_Event& e);
 	void AdvMove();
+	void CheckCollision(Actor other);
 
 	//Maximum axis velocity of the dot
 	static const int DOT_VEL = 10;
@@ -19,6 +21,4 @@ public:
 	int score;
 	int VelX;
 	int VelY;
-	int BackOffset_X;
-	int BackOffset_Y;
 };

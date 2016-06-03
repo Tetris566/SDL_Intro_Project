@@ -18,6 +18,9 @@ const int SCREEN_HEIGHT = 480;
 const int SCREEN_FPS = 60;
 const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
 
+extern int BackOffset_X;
+extern int BackOffset_Y;
+
 class SDLinit {
 public:
 	bool Setup();

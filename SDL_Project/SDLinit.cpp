@@ -18,6 +18,9 @@ SDL_Renderer* gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERAT
 //SDL_Texture* gKeyPressSurfaces[KEY_PRESS_SURFACE_TOTAL];
 TTF_Font *gFont = NULL;
 
+int BackOffset_X = 0;
+int BackOffset_Y = 0;
+
 SDL_Surface* loadSurface(std::string path)
 {
 	SDL_Surface* optimizedSurface = NULL;
@@ -76,8 +79,10 @@ LTexture gBackgroundTexture;
 LTexture gTextTexture;
 LTexture gCurrentSurface;
 LTexture gKeyPressSurfaces[KEY_PRESS_SURFACE_TOTAL];
+LTexture EnemyTexture;
 
 Player player("thePlayer", 240, 190, 10, 100, 0, gCurrentSurface);
+Actor theEnemy("Enemy", 370, 200, 1, 10, EnemyTexture);
 
 bool init()
 {
@@ -164,6 +169,12 @@ bool loadMedia() {
 	if (!gFooTexture.loadFromFile("Assets/Images/Player.png"))
 	{
 		printf("Failed to load Foo' texture image!\n");
+		success = false;
+	}
+
+	if (!EnemyTexture.loadFromFile("Assets/Images/Enemy.png"))
+	{
+		printf("Failed to load Enemy texture image!\n");
 		success = false;
 	}
 
@@ -323,7 +334,13 @@ void SDLinit::Update() {
 		SDL_RenderClear(gRenderer);
 
 		//Render background texture to screen
-		gBackgroundTexture.render(player.BackOffset_X, player.BackOffset_Y);
+		gBackgroundTexture.render(BackOffset_X, BackOffset_Y);
+
+		//RenderEnemy
+		EnemyTexture.render(theEnemy.xPos + BackOffset_X, theEnemy.yPos + BackOffset_Y);
+
+		player.CheckCollision(theEnemy);
+		theEnemy.CheckCollision(player);
 
 		//Render Character to the screen
 		gCurrentSurface.render(player.xPos,player.yPos);
