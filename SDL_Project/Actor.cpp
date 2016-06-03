@@ -13,3 +13,7 @@ void Actor::ApplyDamage(int Amount) {
 void Actor::DestroyActor() {
 
 }
+
+void Actor::Collide(int xPos, int yPos) {
+
+}

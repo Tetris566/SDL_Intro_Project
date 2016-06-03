@@ -67,6 +67,7 @@ void Player::AdvMove() {
 	if (yPos < 0) {
 		yPos = 0;
 	}
+	////////////////////////////////MIDDLE CONSTRAINTS/////////////////////
 	//Up
 	if (BackOffset_Y > 0) {
 		BackOffset_Y = 0;
@@ -99,4 +100,5 @@ void Player::AdvMove() {
 	if (BackOffset_X < -1360) {
 		BackOffset_X = -1360;
 	}
+	//////////////////////////////////////////////////////////////////////
 }
