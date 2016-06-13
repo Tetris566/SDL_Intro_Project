@@ -10,7 +10,7 @@
 #include <sstream>
 #include "Player.h"
 
-#define GameName "RPG"
+#define GameName "BlockMan"
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 640;
@@ -20,6 +20,9 @@ const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
 
 extern int BackOffset_X;
 extern int BackOffset_Y;
+extern bool EnemyDestroyed;
+extern bool EnemyCheck;
+extern float Score;
 
 class SDLinit {
 public:

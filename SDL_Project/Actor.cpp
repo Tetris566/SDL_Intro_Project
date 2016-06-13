@@ -25,7 +25,7 @@ void Actor::ApplyDamage(int Amount) {
 }
 
 void Actor::DestroyActor() {
-
+	delete[] this;
 }
 
 bool Actor::Collide(SDL_Rect a, SDL_Rect b) {
@@ -120,7 +120,7 @@ void Actor::CheckCollision(Actor other)
 
 	if ((xPos < 0) || (xPos + 100 > SCREEN_WIDTH) || CollideRevOff(Collider, other.Collider))
 	{
-		printf("EnemyHit");
+		//printf("EnemyHit");
 		Collider.x = xPos;
 	}
 
@@ -128,7 +128,7 @@ void Actor::CheckCollision(Actor other)
 
 	if ((yPos < 0) || (yPos + 100 > SCREEN_HEIGHT) || CollideRevOff(Collider, other.Collider))
 	{
-		printf("EnemyHit");
+		//printf("EnemyHit");
 		Collider.y = yPos;
 	}
 }

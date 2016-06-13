@@ -20,6 +20,10 @@ TTF_Font *gFont = NULL;
 
 int BackOffset_X = 0;
 int BackOffset_Y = 0;
+float gDeltaTime = 0;
+bool EnemyDestroyed = false;
+float Score = 0;
+bool EnemyCheck = true;
 
 SDL_Surface* loadSurface(std::string path)
 {
@@ -80,6 +84,7 @@ LTexture gTextTexture;
 LTexture gCurrentSurface;
 LTexture gKeyPressSurfaces[KEY_PRESS_SURFACE_TOTAL];
 LTexture EnemyTexture;
+LTexture EnemyTexture2;
 
 Player player("thePlayer", 240, 190, 10, 100, 0, gCurrentSurface);
 Actor theEnemy("Enemy", 370, 200, 1, 10, EnemyTexture);
@@ -98,9 +103,9 @@ bool init()
 	else
 	{
 		//Create window
-		gWindow = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+		gWindow = SDL_CreateWindow(GameName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 		if (gWindow == NULL)
-		{
+		{ 
 			printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
 			success = false;
 		}
@@ -234,6 +239,12 @@ bool SDLinit::Setup() {
 
 //TODO add DeltaTime
 void SDLinit::Update() {
+
+	static unsigned int lastTime = 0;
+	unsigned int runningTime = SDL_GetTicks();
+	gDeltaTime = (runningTime - lastTime) / 1000;
+	lastTime = runningTime;
+
 	//Main loop flag
 	bool quit = false;
 
@@ -318,7 +329,7 @@ void SDLinit::Update() {
 
 		//Set text to be rendered
 		timeText.str("");
-		timeText << "Average Frames Per Second (With Cap) " << avgFPS;
+		timeText << "Score: " << Score;
 
 		//Render text
 		if (!gTextTexture.loadFromRenderedText(timeText.str().c_str(), textColor))
@@ -328,6 +339,7 @@ void SDLinit::Update() {
 		////////////////////////////////////////////////////////////////////////
 
 		player.AdvMove();
+
 
 		//Clear screen
 		SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
@@ -339,7 +351,17 @@ void SDLinit::Update() {
 		//RenderEnemy
 		EnemyTexture.render(theEnemy.xPos + BackOffset_X, theEnemy.yPos + BackOffset_Y);
 
-		player.CheckCollision(theEnemy);
+		if (EnemyDestroyed == true) {
+			theEnemy.xPos = rand() % 1500;
+			theEnemy.yPos = rand() % 1500;
+			Score += 0.5;
+			EnemyDestroyed = false;
+		}
+
+		if (!EnemyDestroyed) {
+			player.CheckCollision(theEnemy);
+		}
+		
 		theEnemy.CheckCollision(player);
 
 		//Render Character to the screen

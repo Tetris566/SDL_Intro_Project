@@ -76,12 +76,12 @@ void Player::AdvMove() {
 	}
 	if (yPos < 100 && BackOffset_Y < 0) {
 		yPos = 100;
-		BackOffset_Y += 10;
+		BackOffset_Y -= VelY;
 	}
 	//Down
 	if (yPos > 280 && BackOffset_Y > -1500) {
 		yPos = 280;
-		BackOffset_Y -= 10;
+		BackOffset_Y -= VelY;
 	}
 	if (BackOffset_Y < -1500) {
 		BackOffset_Y = -1500;
@@ -89,7 +89,7 @@ void Player::AdvMove() {
 	//Left
 	if (xPos < 130 && BackOffset_X < 0) {
 		xPos = 130;
-		BackOffset_X += 10;
+		BackOffset_X -= VelX;
 	}
 	if (BackOffset_X > 0) {
 		BackOffset_X = 0;
@@ -97,7 +97,7 @@ void Player::AdvMove() {
 	//Right
 	if (xPos > 410 && BackOffset_X > -1360) {
 		xPos = 410;
-		BackOffset_X -= 10;
+		BackOffset_X -= VelX;
 	}
 	if (BackOffset_X < -1360) {
 		BackOffset_X = -1360;
@@ -106,26 +106,30 @@ void Player::AdvMove() {
 
 void Player::CheckCollision(Actor other) {
 	//If the dot collided or went too far to the left or right
-	xPos += VelX;
+	//xPos += VelX;
 	Collider.x = xPos;
 
 	if ((xPos < 0) || (xPos + 100 > SCREEN_WIDTH) || Collide(Collider, other.Collider))
 	{
 		
 		//Move back
-		xPos -= 2 * VelX;
+		printf("Hit_X");
+		EnemyDestroyed = true;
+		xPos -= 1 * VelX;
 		Collider.x = xPos;
 	}
 
 	//Move the dot up or down
-	yPos += VelY;
+	//yPos += VelY;
 	Collider.y = yPos;
 
 	//If the dot collided or went too far up or down
 	if ((yPos < 0) || (yPos + 100 > SCREEN_HEIGHT) || Collide(Collider, other.Collider))
 	{
 		//Move back
-		yPos -= 2 * VelY;
+		printf("Hit_Y");
+		EnemyDestroyed = true;
+		yPos -= 1 * VelY;
 		Collider.y = yPos;
 	}
 }
